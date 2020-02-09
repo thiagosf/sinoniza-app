@@ -40,7 +40,6 @@ class _HomePageState extends State<HomePage> {
     _speech = new SpeechRecognition();
     _speech.setAvailabilityHandler(_onSpeechAvailability);
     _speech.setCurrentLocaleHandler(_onCurrentLocale);
-    _speech.setRecognitionStartedHandler(_onRecognitionStarted);
     _speech.setRecognitionResultHandler(_onRecognitionResult);
     _speech.setRecognitionCompleteHandler(_onRecognitionComplete);
     _speech.setErrorHandler(_onSpeechErrorHandler);
@@ -62,12 +61,11 @@ class _HomePageState extends State<HomePage> {
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text('Sinoniza'),
+        elevation: 2.0,
       ),
       body: Container(
         color: Colors.yellow,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: ListView(
           children: <Widget>[
             Padding(
               padding: EdgeInsets.all(20.0),
@@ -77,56 +75,108 @@ class _HomePageState extends State<HomePage> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    TextFormField(
-                      controller: _formController,
+                    Container(
+                      color: Colors.white,
+                      child: TextField(
+                        onSubmitted: (text) => this._onSubmit(),
+
+                        // maxLines: 3,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 20,
+                        ),
+                        controller: _formController,
+                        decoration: InputDecoration(
+                          labelText: 'Digite uma palavra ou frase',
+                          labelStyle: TextStyle(
+                            color: Colors.black,
+                          ),
+                          focusColor: Colors.black,
+                          fillColor: Colors.red,
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.zero,
+                            borderSide: BorderSide(
+                              style: BorderStyle.solid,
+                              color: Colors.black,
+                              width: 2.0,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.zero,
+                            borderSide: BorderSide(
+                              style: BorderStyle.solid,
+                              color: Colors.black,
+                              width: 2.0,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                    RaisedButton(
-                      child: Text('Enviar'),
-                      color: Colors.blue,
-                      textColor: Colors.white,
-                      onPressed: () {
-                        this._onSubmit();
-                      },
+                    SizedBox(
+                      height: 10.0,
                     ),
-                    Text(_randomPhrase),
-                    this._getRandomButton(),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        border: Border.all(
+                          color: Colors.black,
+                          width: 2.0,
+                        ),
+                      ),
+                      child: FlatButton(
+                        textColor: Colors.white,
+                        child: Container(
+                          child: Text(
+                            'Enviar',
+                            style: TextStyle(fontSize: 20.0),
+                          ),
+                        ),
+                        onPressed: this._onSubmit,
+                      ),
+                    ),
+                    this._getPhrase(),
                     this._getSpinner(),
-                    RaisedButton(
-                      child: Text('Talk'),
-                      color: Colors.pink,
-                      onPressed: this._startListen,
-                    ),
                   ],
                 ),
               ),
             ),
+            SizedBox(
+              height: 70.0,
+            ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: this._startListen,
+        child: Icon(Icons.mic),
+        backgroundColor: Colors.black,
       ),
     );
   }
 
   void _onSubmit() {
-    setState(() {
-      _showSpinner = true;
-    });
-    SynonymApi.getSynonyms({'phrase': _formController.text})
-        .then((Synonym synonym) {
+    if (_formController.text != '') {
       setState(() {
-        _showSpinner = false;
-        _synonym = synonym;
-        _setRandomPhrase();
+        _showSpinner = true;
       });
-    }).catchError((error) {
-      setState(() {
-        _showSpinner = false;
+      SynonymApi.getSynonyms({'phrase': _formController.text})
+          .then((Synonym synonym) {
+        setState(() {
+          _showSpinner = false;
+          _synonym = synonym;
+          _setRandomPhrase();
+        });
+      }).catchError((error) {
+        setState(() {
+          _showSpinner = false;
+        });
+        _scaffoldKey.currentState.showSnackBar(
+          SnackBar(
+            content: Text(error.toString()),
+          ),
+        );
       });
-      _scaffoldKey.currentState.showSnackBar(
-        SnackBar(
-          content: Text(error.toString()),
-        ),
-      );
-    });
+    }
   }
 
   Widget _getSpinner() {
@@ -134,20 +184,16 @@ class _HomePageState extends State<HomePage> {
         ? Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[CircularProgressIndicator()],
+            children: <Widget>[
+              SizedBox(
+                height: 20.0,
+              ),
+              CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+              ),
+            ],
           )
         : SizedBox();
-  }
-
-  Widget _getRandomButton() {
-    if (_synonym != null) {
-      return RaisedButton(
-        child: Text('Random'),
-        color: Colors.green,
-        onPressed: () => this._setRandomPhrase(),
-      );
-    }
-    return SizedBox();
   }
 
   void _setRandomPhrase() {
@@ -161,11 +207,20 @@ class _HomePageState extends State<HomePage> {
 
   void _startListen() async {
     if (_speechRecognitionAvailable) {
-      _speech.listen(locale: _currentLocale).then((result) {
-        print(['listen...', result]);
-      }).catchError((error) {
-        print(error);
-      });
+      if (_isListening) {
+        _speech.cancel();
+        setState(() {
+          _isListening = false;
+        });
+      } else {
+        _speech.listen(locale: _currentLocale).then((result) {
+          setState(() {
+            _isListening = true;
+          });
+        }).catchError((error) {
+          print(error);
+        });
+      }
     }
   }
 
@@ -176,14 +231,12 @@ class _HomePageState extends State<HomePage> {
     setState(() => _currentLocale = locale);
   }
 
-  void _onRecognitionStarted() => setState(() => _isListening = true);
-
   void _onRecognitionResult(String text) =>
       setState(() => _transcription = text);
 
   void _onRecognitionComplete(String text) {
     _formController.text = _transcription;
-    if (_transcription != '') {
+    if (_transcription != '' && _transcription != null) {
       _onSubmit();
     }
     setState(() {
@@ -192,4 +245,66 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onSpeechErrorHandler() => _activateSpeechRecognizer();
+
+  Widget _getPhrase() {
+    if (_randomPhrase != '') {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          SizedBox(
+            height: 10.0,
+          ),
+          Text(
+            'Quem sabe você possa falar:',
+            style: TextStyle(fontSize: 18.0),
+          ),
+          SizedBox(
+            height: 10.0,
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(
+                color: Colors.black,
+                width: 2.0,
+              ),
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(10.0),
+              child: Text(
+                _randomPhrase,
+                style: TextStyle(
+                  fontSize: 24.0,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 10.0,
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.orange,
+              border: Border.all(
+                color: Colors.black,
+                width: 2.0,
+              ),
+            ),
+            child: FlatButton(
+              textColor: Colors.white,
+              child: Container(
+                child: Text(
+                  'Random',
+                  style: TextStyle(fontSize: 16.0),
+                ),
+                // color: Colors.blue,
+              ),
+              onPressed: this._setRandomPhrase,
+            ),
+          ),
+        ],
+      );
+    }
+    return SizedBox();
+  }
 }
