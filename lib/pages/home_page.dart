@@ -38,7 +38,6 @@ class _HomePageState extends State<HomePage> {
 
   void _activateSpeechRecognizer() {
     _speech = new SpeechRecognition();
-    _speech = new SpeechRecognition();
     _speech.setAvailabilityHandler(_onSpeechAvailability);
     _speech.setCurrentLocaleHandler(_onCurrentLocale);
     _speech.setRecognitionStartedHandler(_onRecognitionStarted);
