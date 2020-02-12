@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:sinoniza_app/components/synonym_box.dart';
 import 'package:sinoniza_app/modules/synonym/synonym.dart';
 import 'package:speech_recognition/speech_recognition.dart';
 import '../modules/synonym/synonym_api.dart';
+import '../styles.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -23,6 +25,8 @@ class _HomePageState extends State<HomePage> {
   bool _showSpinner = false;
   Synonym _synonym;
   bool _autoPlay = true;
+  String _lastTranscription;
+  bool _avoidRepetitiveRequest = true;
 
   @override
   void initState() {
@@ -64,7 +68,7 @@ class _HomePageState extends State<HomePage> {
         elevation: 2.0,
       ),
       body: Container(
-        color: Colors.yellow,
+        color: AppColors.yellow,
         child: ListView(
           children: <Widget>[
             Padding(
@@ -117,7 +121,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.blue,
+                        color: AppColors.blue,
                         border: Border.all(
                           color: Colors.black,
                           width: 2.0,
@@ -148,34 +152,43 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: this._startListen,
-        child: Icon(Icons.mic),
-        backgroundColor: Colors.black,
+        child: Icon(
+          Icons.mic,
+          size: 32.0,
+        ),
+        backgroundColor: AppColors.blue,
       ),
     );
   }
 
   void _onSubmit() {
     if (_formController.text != '') {
-      setState(() {
-        _showSpinner = true;
-      });
-      SynonymApi.getSynonyms({'phrase': _formController.text})
-          .then((Synonym synonym) {
+      if (_lastTranscription != _formController.text &&
+          _avoidRepetitiveRequest) {
+        _lastTranscription = _formController.text;
         setState(() {
-          _showSpinner = false;
-          _synonym = synonym;
-          _setRandomPhrase();
+          _showSpinner = true;
         });
-      }).catchError((error) {
-        setState(() {
-          _showSpinner = false;
+        SynonymApi.getSynonyms({'phrase': _formController.text})
+            .then((Synonym synonym) {
+          setState(() {
+            _showSpinner = false;
+            _synonym = synonym;
+            _setRandomPhrase();
+          });
+        }).catchError((error) {
+          setState(() {
+            _showSpinner = false;
+          });
+          _scaffoldKey.currentState.showSnackBar(
+            SnackBar(
+              content: Text(error.toString()),
+            ),
+          );
         });
-        _scaffoldKey.currentState.showSnackBar(
-          SnackBar(
-            content: Text(error.toString()),
-          ),
-        );
-      });
+      } else {
+        this._setRandomPhrase();
+      }
     }
   }
 
@@ -271,35 +284,7 @@ class _HomePageState extends State<HomePage> {
             ),
             child: Padding(
               padding: EdgeInsets.all(10.0),
-              child: Text(
-                _randomPhrase,
-                style: TextStyle(
-                  fontSize: 24.0,
-                ),
-              ),
-            ),
-          ),
-          SizedBox(
-            height: 10.0,
-          ),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.orange,
-              border: Border.all(
-                color: Colors.black,
-                width: 2.0,
-              ),
-            ),
-            child: FlatButton(
-              textColor: Colors.white,
-              child: Container(
-                child: Text(
-                  'Random',
-                  style: TextStyle(fontSize: 16.0),
-                ),
-                // color: Colors.blue,
-              ),
-              onPressed: this._setRandomPhrase,
+              child: SynonymBox(synonym: _synonym),
             ),
           ),
         ],

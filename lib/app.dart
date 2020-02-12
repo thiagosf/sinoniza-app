@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'pages/home_page.dart';
+import 'styles.dart';
 
 class MyApp extends StatelessWidget {
   @override
@@ -12,7 +13,7 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Bangers',
         primaryTextTheme: TextTheme(
           title: TextStyle(
-            color: Color(0xFF2B4BB5),
+            color: AppColors.blue,
             fontSize: 24.0,
           ),
           body1: TextStyle(
