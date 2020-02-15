@@ -174,7 +174,7 @@ class _HomePageState extends State<HomePage> {
           setState(() {
             _showSpinner = false;
             _synonym = synonym;
-            _setRandomPhrase();
+            this._talkPhrase(_synonym.getRandomPhrase());
           });
         }).catchError((error) {
           setState(() {
@@ -186,8 +186,6 @@ class _HomePageState extends State<HomePage> {
             ),
           );
         });
-      } else {
-        this._setRandomPhrase();
       }
     }
   }
@@ -207,15 +205,6 @@ class _HomePageState extends State<HomePage> {
             ],
           )
         : SizedBox();
-  }
-
-  void _setRandomPhrase() {
-    setState(() {
-      _randomPhrase = _synonym.getRandomPhrase();
-      if (_autoPlay) {
-        _flutterTts.speak(_randomPhrase);
-      }
-    });
   }
 
   void _startListen() async {
@@ -260,7 +249,7 @@ class _HomePageState extends State<HomePage> {
   void _onSpeechErrorHandler() => _activateSpeechRecognizer();
 
   Widget _getPhrase() {
-    if (_randomPhrase != '') {
+    if (_synonym != null) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
@@ -274,22 +263,19 @@ class _HomePageState extends State<HomePage> {
           SizedBox(
             height: 10.0,
           ),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(
-                color: Colors.black,
-                width: 2.0,
-              ),
-            ),
-            child: Padding(
-              padding: EdgeInsets.all(10.0),
-              child: SynonymBox(synonym: _synonym),
-            ),
+          SynonymBox(
+            synonym: _synonym,
+            onTalk: this._talkPhrase,
           ),
         ],
       );
     }
     return SizedBox();
+  }
+
+  void _talkPhrase(phrase) {
+    if (_autoPlay) {
+      _flutterTts.speak(phrase);
+    }
   }
 }

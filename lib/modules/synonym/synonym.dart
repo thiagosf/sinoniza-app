@@ -18,11 +18,13 @@ class Synonym {
         list.add(SynonymItem.fromJson(v));
       });
     }
-    return Synonym(
+    Synonym item = Synonym(
       list: list,
       originalPhrase: json['original_phrase'],
       suggestPhrase: json['suggest_phrase'],
     );
+    item.setRandomPhrase();
+    return item;
   }
 
   Map<String, dynamic> toJson() {
@@ -33,13 +35,35 @@ class Synonym {
     return data;
   }
 
+  void setRandomPhrase() {
+    list = list.map((SynonymItem item) {
+      if (item.synonyms.isEmpty == false) {
+        var randomizer = new Random();
+        int random = randomizer.nextInt(item.synonyms.length);
+        int index = 0;
+        item.synonyms = item.synonyms.map((value) {
+          if (index == random) {
+            value.selected = true;
+          } else {
+            value.selected = false;
+          }
+          index++;
+          return value;
+        }).toList();
+      }
+      return item;
+    }).toList();
+  }
+
   String getRandomPhrase() {
     return this.list.map((SynonymItem item) {
       String output = item.value;
       if (item.synonyms.isEmpty == false) {
-        var randomizer = new Random();
-        int random = randomizer.nextInt(item.synonyms.length);
-        output = item.synonyms[random].value;
+        item.synonyms.forEach((item) {
+          if (item.selected) {
+            output = item.value;
+          }
+        });
       }
       return output;
     }).join(' ');
@@ -78,21 +102,36 @@ class SynonymItem {
     data['synonyms'] = this.synonyms.map((v) => v.toJson()).toList();
     return data;
   }
+
+  String selectedRandom() {
+    String output = value;
+    if (synonyms.length > 0) {
+      synonyms.forEach((item) {
+        if (item.selected) {
+          output = item.value;
+        }
+      });
+    }
+    return output;
+  }
 }
 
 class SynonymItemWord {
   int id;
   String value;
+  bool selected;
 
   SynonymItemWord({
     this.id,
     this.value,
+    this.selected,
   });
 
   factory SynonymItemWord.fromJson(Map<String, dynamic> json) {
     return SynonymItemWord(
       id: json['id'],
       value: json['value'],
+      selected: false,
     );
   }
 
@@ -100,6 +139,7 @@ class SynonymItemWord {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['id'] = this.id;
     data['value'] = this.value;
+    data['selected'] = this.selected;
     return data;
   }
 }
