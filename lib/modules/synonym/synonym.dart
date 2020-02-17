@@ -47,6 +47,9 @@ class Synonym {
           } else {
             value.selected = false;
           }
+          if (item.locked) {
+            value.selected = false;
+          }
           index++;
           return value;
         }).toList();
@@ -58,7 +61,7 @@ class Synonym {
   String getRandomPhrase() {
     return this.list.map((SynonymItem item) {
       String output = item.value;
-      if (item.synonyms.isEmpty == false) {
+      if (item.synonyms.isEmpty == false && !item.locked) {
         item.synonyms.forEach((item) {
           if (item.selected) {
             output = item.value;
@@ -74,11 +77,13 @@ class SynonymItem {
   int position;
   String value;
   List<SynonymItemWord> synonyms;
+  bool locked;
 
   SynonymItem({
     this.position,
     this.value,
     this.synonyms,
+    this.locked,
   });
 
   factory SynonymItem.fromJson(Map<String, dynamic> json) {
@@ -89,10 +94,10 @@ class SynonymItem {
       });
     }
     return SynonymItem(
-      position: json['position'],
-      value: json['value'],
-      synonyms: synonyms,
-    );
+        position: json['position'],
+        value: json['value'],
+        synonyms: synonyms,
+        locked: false);
   }
 
   Map<String, dynamic> toJson() {
@@ -100,30 +105,62 @@ class SynonymItem {
     data['position'] = this.position;
     data['value'] = this.value;
     data['synonyms'] = this.synonyms.map((v) => v.toJson()).toList();
+    data['locked'] = this.locked;
     return data;
   }
 
   String selectedRandom() {
     String output = value;
-    if (synonyms.length > 0) {
-      synonyms.forEach((item) {
-        if (item.selected) {
-          output = item.value;
-        }
-      });
+    if (!locked) {
+      if (synonyms.length > 0) {
+        synonyms.forEach((item) {
+          if (item.selected) {
+            output = item.value;
+          }
+        });
+      }
     }
     return output;
+  }
+
+  void selectSynonym(SynonymItemWord synonym) {
+    locked = false;
+    synonyms = synonyms.map((child) {
+      if (child == synonym) {
+        child.selected = true;
+      } else {
+        child.selected = false;
+      }
+      return child;
+    }).toList();
+  }
+
+  List<SynonymItemWord> synonymsSortedMeaning() {
+    List<SynonymItemWord> sortedSynonyms = List<SynonymItemWord>.from(synonyms);
+    sortedSynonyms
+        .sort((a, b) => a.meaning.toString().compareTo(b.meaning.toString()));
+    return sortedSynonyms;
+  }
+
+  void lock() {
+    locked = true;
+  }
+
+  void unlock() {
+    locked = false;
   }
 }
 
 class SynonymItemWord {
   int id;
   String value;
+  String meaning;
   bool selected;
 
   SynonymItemWord({
     this.id,
     this.value,
+    this.meaning,
     this.selected,
   });
 
@@ -131,6 +168,7 @@ class SynonymItemWord {
     return SynonymItemWord(
       id: json['id'],
       value: json['value'],
+      meaning: json['meaning'],
       selected: false,
     );
   }
@@ -139,6 +177,7 @@ class SynonymItemWord {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['id'] = this.id;
     data['value'] = this.value;
+    data['meaning'] = this.meaning;
     data['selected'] = this.selected;
     return data;
   }

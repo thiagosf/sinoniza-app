@@ -21,7 +21,6 @@ class _HomePageState extends State<HomePage> {
   String _ttsLocale = 'pt-BR';
   String _transcription;
   bool _isListening = false;
-  String _randomPhrase = '';
   bool _showSpinner = false;
   Synonym _synonym;
   bool _autoPlay = true;
@@ -83,8 +82,6 @@ class _HomePageState extends State<HomePage> {
                       color: Colors.white,
                       child: TextField(
                         onSubmitted: (text) => this._onSubmit(),
-
-                        // maxLines: 3,
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: 20,
@@ -266,6 +263,7 @@ class _HomePageState extends State<HomePage> {
           SynonymBox(
             synonym: _synonym,
             onTalk: this._talkPhrase,
+            onNotificate: this._onNotificate,
           ),
         ],
       );
@@ -277,5 +275,13 @@ class _HomePageState extends State<HomePage> {
     if (_autoPlay) {
       _flutterTts.speak(phrase);
     }
+  }
+
+  void _onNotificate(text) {
+    _scaffoldKey.currentState.showSnackBar(
+      SnackBar(
+        content: Text(text),
+      ),
+    );
   }
 }

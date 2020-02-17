@@ -7,7 +7,7 @@ class Api {
   static Uri _buildUri(path, [params]) {
     final isDebug = Utils.isDebug();
     return Uri(
-      host: isDebug ? '192.168.1.104' : 'api.sinoniza.thiagosf.net',
+      host: isDebug ? '192.168.1.103' : 'api.sinoniza.thiagosf.net',
       port: isDebug ? 3000 : 443,
       scheme: isDebug ? 'http' : 'https',
       path: path,

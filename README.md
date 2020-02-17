@@ -1,3 +1,3 @@
 # Sinoniza
 
-App em fluter para pesquisar sinônimos
+Flutter app to search synonyms in portuguese.
