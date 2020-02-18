@@ -67,7 +67,14 @@ class _HomePageState extends State<HomePage> {
         elevation: 2.0,
       ),
       body: Container(
-        color: AppColors.yellow,
+        decoration: BoxDecoration(
+          color: AppColors.yellow,
+          image: DecorationImage(
+            image: AssetImage('assets/images/pattern-bg.png'),
+            fit: BoxFit.none,
+            repeat: ImageRepeat.repeat,
+          ),
+        ),
         child: ListView(
           children: <Widget>[
             Padding(
@@ -80,36 +87,73 @@ class _HomePageState extends State<HomePage> {
                   children: <Widget>[
                     Container(
                       color: Colors.white,
-                      child: TextField(
-                        onSubmitted: (text) => this._onSubmit(),
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 20,
-                        ),
-                        controller: _formController,
-                        decoration: InputDecoration(
-                          labelText: 'Digite uma palavra ou frase',
-                          labelStyle: TextStyle(
-                            color: Colors.black,
-                          ),
-                          focusColor: Colors.black,
-                          fillColor: Colors.red,
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.zero,
-                            borderSide: BorderSide(
-                              style: BorderStyle.solid,
-                              color: Colors.black,
-                              width: 2.0,
+                      child: IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: <Widget>[
+                            Expanded(
+                              child: TextField(
+                                onSubmitted: (text) => this._onSubmit(),
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 20,
+                                ),
+                                controller: _formController,
+                                decoration: InputDecoration(
+                                  labelText: 'Digite uma palavra ou frase',
+                                  labelStyle: TextStyle(
+                                    color: Colors.black,
+                                  ),
+                                  focusColor: Colors.black,
+                                  fillColor: Colors.red,
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.zero,
+                                    borderSide: BorderSide(
+                                      style: BorderStyle.solid,
+                                      color: Colors.black,
+                                      width: 2.0,
+                                    ),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.zero,
+                                    borderSide: BorderSide(
+                                      style: BorderStyle.solid,
+                                      color: Colors.black,
+                                      width: 2.0,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.zero,
-                            borderSide: BorderSide(
-                              style: BorderStyle.solid,
-                              color: Colors.black,
-                              width: 2.0,
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                border: Border.all(
+                                  color: Colors.black,
+                                  width: 2.0,
+                                ),
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.all(0.0),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    InkWell(
+                                      onTap: this._clearText,
+                                      child: Padding(
+                                        padding: EdgeInsets.all(10.0),
+                                        child: Icon(
+                                          Icons.close,
+                                          color: Colors.white,
+                                          size: 24.0,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
                       ),
                     ),
@@ -283,5 +327,9 @@ class _HomePageState extends State<HomePage> {
         content: Text(text),
       ),
     );
+  }
+
+  void _clearText() {
+    _formController.text = '';
   }
 }
