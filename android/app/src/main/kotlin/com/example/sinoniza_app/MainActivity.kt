@@ -1,4 +1,4 @@
-package com.example.sinoniza_app
+package net.thiagosf.sinoniza_app
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity
