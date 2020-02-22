@@ -1,3 +1,3 @@
 # Sinoniza
 
-Flutter app to search synonyms in portuguese.
+Flutter app to search synonyms.

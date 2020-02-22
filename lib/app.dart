@@ -16,9 +16,6 @@ class MyApp extends StatelessWidget {
             color: AppColors.blue,
             fontSize: 24.0,
           ),
-          body1: TextStyle(
-            color: Colors.red,
-          ),
         ),
       ),
       home: HomePage(),

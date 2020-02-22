@@ -106,8 +106,8 @@ class _SynonymBoxState extends State<SynonymBox> {
               textColor: Colors.white,
               child: Container(
                 child: Text(
-                  'Random',
-                  style: TextStyle(fontSize: 16.0),
+                  'Trocar',
+                  style: TextStyle(fontSize: 24.0),
                 ),
               ),
               onPressed: this._setRandomPhrase,
@@ -205,7 +205,9 @@ class _SynonymBoxState extends State<SynonymBox> {
             ],
           ),
           children: item.synonymsSortedMeaning().map((synonym) {
-            final meaning = synonym.meaning != null ? synonym.meaning : '---';
+            final meaning = synonym.meaning != null && synonym.meaning != ''
+                ? synonym.meaning
+                : '---';
             bool showMeaning = lastMeaning != meaning;
             lastMeaning = meaning;
             return SimpleDialogOption(

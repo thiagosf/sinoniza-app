@@ -3,6 +3,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:sinoniza_app/components/synonym_box.dart';
 import 'package:sinoniza_app/modules/synonym/synonym.dart';
 import 'package:speech_recognition/speech_recognition.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../modules/synonym/synonym_api.dart';
 import '../styles.dart';
 
@@ -65,6 +66,16 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: Text('Sinoniza'),
         elevation: 2.0,
+        backgroundColor: Colors.white,
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(
+              Icons.info,
+              color: AppColors.blue,
+            ),
+            onPressed: this._openAbout,
+          ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -173,7 +184,7 @@ class _HomePageState extends State<HomePage> {
                         child: Container(
                           child: Text(
                             'Enviar',
-                            style: TextStyle(fontSize: 20.0),
+                            style: TextStyle(fontSize: 24.0),
                           ),
                         ),
                         onPressed: this._onSubmit,
@@ -331,5 +342,122 @@ class _HomePageState extends State<HomePage> {
 
   void _clearText() {
     _formController.text = '';
+  }
+
+  void _openAbout() {
+    showDialog(
+      context: context,
+      child: SimpleDialog(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10.0),
+              child: Image(
+                image: AssetImage('assets/images/logo-about.png'),
+              ),
+            ),
+            SizedBox(
+              height: 10.0,
+            ),
+            Text(
+              'Versão 1.0.0',
+              style: TextStyle(
+                fontSize: 16.0,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
+        children: <Widget>[
+          Padding(
+            padding: EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  'Esse aplicativo foi construído com a ajuda de alguns softwares gratuitos, como:',
+                  style: TextStyle(
+                    fontSize: 18.0,
+                  ),
+                ),
+                SizedBox(height: 10.0),
+              ]
+                ..addAll(this._getUsedTools())
+                ..addAll(this._getGithubRepos()),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _getUsedTools() {
+    final usedTools = [
+      {
+        'name': 'Flutter',
+        'link': 'https://flutter.dev',
+      },
+      {
+        'name': 'NodeJS',
+        'link': 'https://nodejs.org',
+      }
+    ];
+    return usedTools.map((item) {
+      return this._getLink(item['name'], item['link']);
+    }).toList();
+  }
+
+  List<Widget> _getGithubRepos() {
+    return [
+      SizedBox(
+        height: 20.0,
+      ),
+      Text(
+        'O código desse projeto é open source, veja como foi construído:',
+        style: TextStyle(
+          fontSize: 18.0,
+        ),
+      ),
+      SizedBox(height: 10.0),
+      this._getLink('Flutter App', 'https://github.com/thiagosf/sinoniza-app'),
+      this._getLink('NodeJS API', 'https://github.com/thiagosf/sinoniza-api'),
+    ];
+  }
+
+  Widget _getLink(text, url) {
+    return InkWell(
+      onTap: () async {
+        if (await canLaunch(url)) {
+          await launch(url);
+        } else {
+          throw 'Could not launch $url';
+        }
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              style: BorderStyle.solid,
+              color: AppColors.yellow,
+              width: 2.0,
+            ),
+          ),
+        ),
+        child: Padding(
+          padding: EdgeInsets.only(
+            top: 5.0,
+            bottom: 5.0,
+          ),
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 22.0,
+              color: AppColors.blue,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
