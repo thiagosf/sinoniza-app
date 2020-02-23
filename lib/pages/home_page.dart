@@ -4,6 +4,7 @@ import 'package:sinoniza_app/components/synonym_box.dart';
 import 'package:sinoniza_app/modules/synonym/synonym.dart';
 import 'package:speech_recognition/speech_recognition.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../modules/synonym/synonym_api.dart';
 import '../styles.dart';
 
@@ -32,7 +33,8 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _setTts();
-    _activateSpeechRecognizer();
+    _requestPermissions();
+    // _activateSpeechRecognizer();
   }
 
   void _setTts() async {
@@ -40,7 +42,7 @@ class _HomePageState extends State<HomePage> {
     await _flutterTts.setLanguage(_ttsLocale);
   }
 
-  void _activateSpeechRecognizer() {
+  void _activateSpeechRecognizer() async {
     _speech = new SpeechRecognition();
     _speech.setAvailabilityHandler(_onSpeechAvailability);
     _speech.setCurrentLocaleHandler(_onCurrentLocale);
@@ -459,5 +461,24 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+
+  void _requestPermissions() async {
+    var permitted = false;
+
+    PermissionStatus permission = await PermissionHandler()
+        .checkPermissionStatus(PermissionGroup.microphone);
+
+    if (permission != PermissionStatus.granted) {
+      Map<PermissionGroup, PermissionStatus> permissions =
+          await PermissionHandler()
+              .requestPermissions([PermissionGroup.microphone]);
+      permitted =
+          permissions[PermissionGroup.microphone] == PermissionStatus.granted;
+    }
+
+    if (permitted) {
+      this._activateSpeechRecognizer();
+    }
   }
 }
